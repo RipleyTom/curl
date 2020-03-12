@@ -298,7 +298,7 @@ if(WIN32)
 endif()
 
 # check SSL libraries
-# TODO support GnuTLS and WolfSSL
+# TODO support GnuTLS
 
 if(APPLE)
   option(CMAKE_USE_SECTRANSP "enable Apple OS native SSL/TLS" OFF)
@@ -311,9 +311,10 @@ endif()
 option(CMAKE_USE_MBEDTLS "Enable mbedTLS for SSL/TLS" OFF)
 option(CMAKE_USE_BEARSSL "Enable BearSSL for SSL/TLS" OFF)
 option(CMAKE_USE_NSS "Enable NSS for SSL/TLS" OFF)
+option(CMAKE_USE_WOLFSSL "enable wolfSSL for SSL/TLS" OFF)
 
 set(openssl_default ON)
-if(WIN32 OR CMAKE_USE_SECTRANSP OR CMAKE_USE_WINSSL OR CMAKE_USE_MBEDTLS OR CMAKE_USE_NSS)
+if(WIN32 OR CMAKE_USE_SECTRANSP OR CMAKE_USE_WINSSL OR CMAKE_USE_MBEDTLS OR CMAKE_USE_NSS OR CMAKE_USE_WOLFSSL)
   set(openssl_default OFF)
 endif()
 option(CMAKE_USE_OPENSSL "Use OpenSSL code. Experimental" ${openssl_default})
@@ -325,6 +326,7 @@ count_true(enabled_ssl_options_count
   CMAKE_USE_MBEDTLS
   CMAKE_USE_BEARSSL
   CMAKE_USE_NSS
+  CMAKE_USE_WOLFSSL
 )
 if(enabled_ssl_options_count GREATER "1")
   set(CURL_WITH_MULTI_SSL ON)
@@ -403,6 +405,14 @@ if(CMAKE_USE_BEARSSL)
   set(USE_BEARSSL ON)
   list(APPEND CURL_LIBS ${BEARSSL_LIBRARY})
   include_directories(${BEARSSL_INCLUDE_DIRS})
+endif()
+
+if(CMAKE_USE_WOLFSSL)
+  find_package(WolfSSL REQUIRED)
+  set(SSL_ENABLED ON)
+  set(USE_WOLFSSL ON)
+  list(APPEND CURL_LIBS ${WOLFSSL_LIBRARY})
+  include_directories(${WOLFSSL_INCLUDE_DIRS})
 endif()
 
 if(CMAKE_USE_NSS)
@@ -1311,6 +1321,7 @@ _add_if("Secure Transport" SSL_ENABLED AND USE_SECTRANSP)
 _add_if("mbedTLS"          SSL_ENABLED AND USE_MBEDTLS)
 _add_if("BearSSL"          SSL_ENABLED AND USE_BEARSSL)
 _add_if("NSS"              SSL_ENABLED AND USE_NSS)
+_add_if("wolfSSL"          SSL_ENABLED AND USE_WOLFSSL)
 if(_items)
   list(SORT _items)
 endif()
