@@ -61,7 +61,7 @@ matrix:
           compiler: gcc
           dist: trusty
           env:
-              - T=normal C="--enable-ares"
+              - T=normal C="--enable-ares CFLAGS=\"-g -fno-omit-frame-pointer\""
               - OVERRIDE_CC="CC=gcc-8" OVERRIDE_CXX="CXX=g++-8"
         - os: linux
           compiler: gcc
