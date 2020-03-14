@@ -954,6 +954,10 @@ ${SIZEOF_TIME_T_CODE}
 /* if NSS is enabled */
 #cmakedefine USE_NSS 1
 
+/* if WolfSSL is enabled */
+#cmakedefine USE_WOLFSSL 1
+#cmakedefine HAVE_SNI 1
+
 /* if you have the PK11_CreateManagedGenericObject function */
 #cmakedefine HAVE_PK11_CREATEMANAGEDGENERICOBJECT 1
 
