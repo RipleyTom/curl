@@ -74,8 +74,8 @@ include_directories(${CURL_SOURCE_DIR}/include)
 
 option(CURL_WERROR "Turn compiler warnings into errors" OFF)
 option(PICKY_COMPILER "Enable picky compiler options" ON)
-option(BUILD_CURL_EXE "Set to ON to build curl executable." ON)
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(BUILD_CURL_EXE "Set to ON to build curl executable." OFF)
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 option(ENABLE_ARES "Set to ON to enable c-ares support" OFF)
 if(WIN32)
   option(CURL_STATIC_CRT "Set to ON to build libcurl with static CRT on Windows (/MT)." OFF)
@@ -140,7 +140,7 @@ endif()
 
 include(CurlSymbolHiding)
 
-option(HTTP_ONLY "disables all protocols except HTTP (This overrides all CURL_DISABLE_* options)" OFF)
+option(HTTP_ONLY "disables all protocols except HTTP (This overrides all CURL_DISABLE_* options)" ON)
 mark_as_advanced(HTTP_ONLY)
 option(CURL_DISABLE_FTP "disables FTP" OFF)
 mark_as_advanced(CURL_DISABLE_FTP)
@@ -311,9 +311,10 @@ endif()
 option(CMAKE_USE_MBEDTLS "Enable mbedTLS for SSL/TLS" OFF)
 option(CMAKE_USE_BEARSSL "Enable BearSSL for SSL/TLS" OFF)
 option(CMAKE_USE_NSS "Enable NSS for SSL/TLS" OFF)
+option(CMAKE_USE_WOLFSSL "Enable WolfSSL for SSL/TLS" ON)
 
 set(openssl_default ON)
-if(WIN32 OR CMAKE_USE_SECTRANSP OR CMAKE_USE_WINSSL OR CMAKE_USE_MBEDTLS OR CMAKE_USE_NSS)
+if(WIN32 OR CMAKE_USE_SECTRANSP OR CMAKE_USE_WINSSL OR CMAKE_USE_MBEDTLS OR CMAKE_USE_NSS OR CMAKE_USE_WOLFSSL)
   set(openssl_default OFF)
 endif()
 option(CMAKE_USE_OPENSSL "Use OpenSSL code. Experimental" ${openssl_default})
@@ -325,6 +326,7 @@ count_true(enabled_ssl_options_count
   CMAKE_USE_MBEDTLS
   CMAKE_USE_BEARSSL
   CMAKE_USE_NSS
+  CMAKE_USE_WOLFSSL
 )
 if(enabled_ssl_options_count GREATER "1")
   set(CURL_WITH_MULTI_SSL ON)
@@ -416,6 +418,13 @@ if(CMAKE_USE_NSS)
   set(CMAKE_REQUIRED_LIBRARIES ${NSS_LIBRARIES})
   check_symbol_exists(PK11_CreateManagedGenericObject "pk11pub.h" HAVE_PK11_CREATEMANAGEDGENERICOBJECT)
   cmake_pop_check_state()
+endif()
+
+if(CMAKE_USE_WOLFSSL)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../wolfssl/)
+# list(APPEND CURL_LIBS )
+  set(SSL_ENABLED ON)
+  set(USE_WOLFSSL ON)
 endif()
 
 option(USE_NGHTTP2 "Use Nghttp2 library" OFF)
@@ -689,7 +698,7 @@ set(CURL_CA_BUNDLE "auto" CACHE STRING
     "Path to the CA bundle. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
 set(CURL_CA_FALLBACK OFF CACHE BOOL
     "Set ON to use built-in CA store of TLS backend. Defaults to OFF")
-set(CURL_CA_PATH "auto" CACHE STRING
+set(CURL_CA_PATH "none" CACHE STRING
     "Location of default CA path. Set 'none' to disable or 'auto' for auto-detection. Defaults to 'auto'.")
 
 if("${CURL_CA_BUNDLE}" STREQUAL "")
